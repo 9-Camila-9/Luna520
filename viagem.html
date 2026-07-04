@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nosso Diário de Viagens</title>
+
+<link rel="stylesheet" href="viagem.css">
+
+</head>
+
+<body>
+
+<div class="escurecer">
+
+<div class="container">
+
+<header>
+
+<h1>🌙 Nosso Diário de Viagens ✈️</h1>
+
+<p>
+Marque as vezes que nos encontramos.
+</p>
+
+</header>
+
+
+<section class="calendario">
+
+<div class="topo">
+
+<button id="anterior">
+◀
+</button>
+
+<h2 id="mesAno"></h2>
+
+<button id="proximo">
+▶
+</button>
+
+</div>
+
+
+<div class="dias-semana">
+
+<div>Dom</div>
+<div>Seg</div>
+<div>Ter</div>
+<div>Qua</div>
+<div>Qui</div>
+<div>Sex</div>
+<div>Sáb</div>
+
+</div>
+
+
+<div id="dias" class="dias">
+
+</div>
+
+</section>
+
+
+<aside>
+
+<h2>✈️ Próximas viagens</h2>
+
+<div id="viagensFuturas">
+
+Nenhuma viagem cadastrada.
+
+</div>
+
+<hr>
+
+<h2>📝 Viagens concluídas</h2>
+
+<div id="postits">
+
+Nenhuma ainda.
+
+</div>
+
+</aside>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+<script>
+// ===============================
+// CALENDÁRIO DE VIAGENS
+// Parte 1 - Calendário
+// ===============================
+
+const mesAno = document.getElementById("mesAno");
+const dias = document.getElementById("dias");
+
+const btnAnterior = document.getElementById("anterior");
+const btnProximo = document.getElementById("proximo");
+
+let hoje = new Date();
+
+let mesAtual = hoje.getMonth();
+let anoAtual = hoje.getFullYear();
+
+const meses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro"
+];
+
+// Variáveis que serão usadas nas próximas partes
+let dataInicio = null;
+let dataFim = null;
+
+let viagens = JSON.parse(localStorage.getItem("viagens")) || [];
+
+// ---------------------------
+
+function formatarData(data){
+
+    let ano = data.getFullYear();
+
+    let mes = String(data.getMonth()+1).padStart(2,"0");
+
+    let dia = String(data.getDate()).padStart(2,"0");
+
+    return `${ano}-${mes}-${dia}`;
+
+}
+
+// ---------------------------
+
+function desenharCalendario(){
+
+    dias.innerHTML = "";
+
+    mesAno.textContent = `${meses[mesAtual]} ${anoAtual}`;
+
+    let primeiroDia = new Date(anoAtual,mesAtual,1);
+
+    let ultimoDia = new Date(anoAtual,mesAtual+1,0);
+
+    let inicioSemana = primeiroDia.getDay();
+
+    let totalDias = ultimoDia.getDate();
+
+    // espaços vazios
+
+    for(let i=0;i<inicioSemana;i++){
+
+        let vazio=document.createElement("div");
+
+        dias.appendChild(vazio);
+
+    }
+
+    // dias
+
+    for(let dia=1;dia<=totalDias;dia++){
+
+        let div=document.createElement("div");
+
+        div.className="dia";
+
+        div.textContent=dia;
+
+        let data=new Date(anoAtual,mesAtual,dia);
+
+        let chave=formatarData(data);
+
+        div.dataset.data=chave;
+
+        // hoje
+
+        if(
+            dia===hoje.getDate() &&
+            mesAtual===hoje.getMonth() &&
+            anoAtual===hoje.getFullYear()
+        ){
+
+            div.classList.add("hoje");
+
+        }
+
+        // esta função será criada na Parte 2
+        div.addEventListener("click",()=>selecionarData(data));
+
+        dias.appendChild(div);
+
+    }
+
+    // esta função será criada na Parte 2
+    colorirViagens();
+
+}
+
+// ---------------------------
+
+btnAnterior.addEventListener("click",()=>{
+
+    mesAtual--;
+
+    if(mesAtual<0){
+
+        mesAtual=11;
+
+        anoAtual--;
+
+    }
+
+    desenharCalendario();
+
+});
+
+btnProximo.addEventListener("click",()=>{
+
+    mesAtual++;
+
+    if(mesAtual>11){
+
+        mesAtual=0;
+
+        anoAtual++;
+
+    }
+
+    desenharCalendario();
+
+});
+
+desenharCalendario();
+
+// =====================================
+// PARTE 2 - Seleção da viagem
+// =====================================
+
+// Seleciona ida e volta da viagem
+function selecionarData(data){
+
+    // Primeira seleção
+    if(dataInicio === null){
+
+        dataInicio = new Date(data);
+        dataFim = null;
+
+        colorirViagens();
+
+        return;
+    }
+
+    // Segunda seleção
+    if(dataFim === null){
+
+        dataFim = new Date(data);
+
+        // Corrige caso clique primeiro na volta
+        if(dataFim < dataInicio){
+
+            let aux = dataInicio;
+            dataInicio = dataFim;
+            dataFim = aux;
+
+        }
+
+        let nome = prompt("🌸 Nome da viagem:");
+
+        if(nome === null || nome.trim() === ""){
+
+            nome = "Minha viagem";
+
+        }
+
+        viagens.push({
+
+            nome: nome,
+
+            inicio: formatarData(dataInicio),
+
+            fim: formatarData(dataFim)
+
+        });
+
+        salvarViagens();
+
+        dataInicio = null;
+        dataFim = null;
+
+        colorirViagens();
+        atualizarPainel();
+
+        return;
+
+    }
+
+}
+
+// =====================================
+
+function salvarViagens(){
+
+    localStorage.setItem(
+        "viagens",
+        JSON.stringify(viagens)
+    );
+
+}
+
+// =====================================
+
+// Pinta todas as viagens no calendário
+
+function colorirViagens(){
+
+    const diasCalendario = document.querySelectorAll(".dia");
+
+    diasCalendario.forEach(d=>{
+
+        d.classList.remove("inicio");
+        d.classList.remove("fim");
+        d.classList.remove("periodo");
+
+    });
+
+    // Pintar seleção temporária
+
+    if(dataInicio){
+
+        diasCalendario.forEach(d=>{
+
+            if(d.dataset.data===formatarData(dataInicio)){
+
+                d.classList.add("inicio");
+
+            }
+
+        });
+
+    }
+
+    if(dataInicio && dataFim){
+
+        diasCalendario.forEach(d=>{
+
+            let data = new Date(d.dataset.data);
+
+            if(data >= dataInicio && data <= dataFim){
+
+                d.classList.add("periodo");
+
+            }
+
+        });
+
+    }
+
+    // Pintar viagens já salvas
+
+    viagens.forEach(v=>{
+
+        let inicio = new Date(v.inicio);
+
+        let fim = new Date(v.fim);
+
+        diasCalendario.forEach(d=>{
+
+            let data = new Date(d.dataset.data);
+
+            if(data >= inicio && data <= fim){
+
+                d.classList.add("periodo");
+
+            }
+
+            if(d.dataset.data===v.inicio){
+
+                d.classList.add("inicio");
+
+            }
+
+            if(d.dataset.data===v.fim){
+
+                d.classList.add("fim");
+
+            }
+
+        });
+
+    });
+
+}
+
+// =====================================
+
+function atualizarPainel(){
+
+    const painel = document.getElementById("viagensFuturas");
+
+    painel.innerHTML = "";
+
+    if(viagens.length===0){
+
+        painel.innerHTML="Nenhuma viagem cadastrada.";
+
+        return;
+
+    }
+
+    viagens.forEach((viagem,index)=>{
+
+        let card=document.createElement("div");
+
+        card.className="viagem";
+
+        card.innerHTML=`
+
+        <h3>✈️ ${viagem.nome}</h3>
+
+        <p><strong>Ida:</strong> ${viagem.inicio}</p>
+
+        <p><strong>Volta:</strong> ${viagem.fim}</p>
+
+        <div class="contagem" id="contador${index}"></div>
+
+        `;
+
+        painel.appendChild(card);
+
+    });
+
+}
+
+// =====================================
+
+// Carrega painel ao abrir
+
+atualizarPainel();
+
+// =====================================
+// PARTE 3 - Contagem regressiva e post-its
+// =====================================
+
+function atualizarContadores() {
+
+    let hoje = new Date();
+    hoje.setHours(0,0,0,0);
+
+    const postits = document.getElementById("postits");
+    postits.innerHTML = "";
+
+    viagens.forEach((viagem, index) => {
+
+        const contador = document.getElementById("contador"+index);
+
+        if(!contador) return;
+
+        let inicio = new Date(viagem.inicio);
+        let fim = new Date(viagem.fim);
+
+        inicio.setHours(0,0,0,0);
+        fim.setHours(0,0,0,0);
+
+        // Ainda não começou
+        if(hoje < inicio){
+
+            let dias = Math.ceil((inicio-hoje)/(1000*60*60*24));
+
+            contador.innerHTML = `
+                ⏳ Faltam <b>${dias}</b> dia(s)
+            `;
+
+        }
+
+        // Está acontecendo
+        else if(hoje >= inicio && hoje <= fim){
+
+            let passou = Math.floor((hoje-inicio)/(1000*60*60*24))+1;
+
+            let total = Math.floor((fim-inicio)/(1000*60*60*24))+1;
+
+            contador.innerHTML = `
+                ✈️ Você está no
+                <br>
+                <b>${passou}º dia de ${total}</b>
+            `;
+
+        }
+
+        // Terminou
+        else{
+
+            contador.innerHTML = `
+                ✅ Viagem concluída
+            `;
+
+            let card = document.createElement("div");
+
+            card.className = "postit";
+
+            card.innerHTML = `
+
+            <h3>🌸 ${viagem.nome}</h3>
+
+            <p>
+
+            ${viagem.inicio}
+
+            <br>
+
+            até
+
+            <br>
+
+            ${viagem.fim}
+
+            </p>
+
+            `;
+
+            postits.appendChild(card);
+
+        }
+
+    });
+
+}
+
+atualizarContadores();
+
+setInterval(atualizarContadores,60000);
+
+// =====================================
+// Botão excluir
+// =====================================
+
+function excluirViagem(indice){
+
+    if(!confirm("Excluir esta viagem?"))
+        return;
+
+    viagens.splice(indice,1);
+
+    salvarViagens();
+
+    atualizarPainel();
+
+    atualizarContadores();
+
+    desenharCalendario();
+
+}
+
+// =====================================
+// Botão editar
+// =====================================
+
+function editarViagem(indice){
+
+    let viagem = viagens[indice];
+
+    let novoNome = prompt(
+        "Nome da viagem:",
+        viagem.nome
+    );
+
+    if(novoNome===null) return;
+
+    viagem.nome = novoNome;
+
+    salvarViagens();
+
+    atualizarPainel();
+
+    atualizarContadores();
+
+}
+
+// =====================================
+// Sobrescreve o painel lateral
+// =====================================
+
+function atualizarPainel(){
+
+    const painel = document.getElementById("viagensFuturas");
+
+    painel.innerHTML = "";
+
+    if(viagens.length==0){
+
+        painel.innerHTML="Nenhuma viagem cadastrada.";
+
+        return;
+
+    }
+
+    viagens.forEach((viagem,index)=>{
+
+        let card=document.createElement("div");
+
+        card.className="viagem";
+
+        card.innerHTML=`
+
+            <h3>✈️ ${viagem.nome}</h3>
+
+            <p><b>Ida:</b> ${viagem.inicio}</p>
+
+            <p><b>Volta:</b> ${viagem.fim}</p>
+
+            <div class="contagem" id="contador${index}"></div>
+
+            <br>
+
+            <button onclick="editarViagem(${index})">
+
+            ✏️ Editar
+
+            </button>
+
+            <button onclick="excluirViagem(${index})">
+
+            🗑️ Excluir
+
+            </button>
+
+        `;
+
+        painel.appendChild(card);
+
+    });
+
+    atualizarContadores();
+
+}
+// =====================================
+// PARTE 4 - Melhorias Visuais e Extras
+// =====================================
+
+// ------------------------------
+// Tooltip ao passar o mouse
+// ------------------------------
+
+const tooltip = document.createElement("div");
+
+tooltip.style.position = "fixed";
+tooltip.style.padding = "8px 12px";
+tooltip.style.background = "rgba(0,0,0,.75)";
+tooltip.style.color = "white";
+tooltip.style.borderRadius = "10px";
+tooltip.style.pointerEvents = "none";
+tooltip.style.display = "none";
+tooltip.style.zIndex = "9999";
+
+document.body.appendChild(tooltip);
+
+function ativarTooltips(){
+
+    document.querySelectorAll(".dia").forEach(dia=>{
+
+        dia.onmousemove = function(e){
+
+            const data = this.dataset.data;
+
+            let texto = data;
+
+            viagens.forEach(v=>{
+
+                if(data >= v.inicio && data <= v.fim){
+
+                    texto = "✈️ " + v.nome;
+
+                }
+
+            });
+
+            tooltip.innerHTML = texto;
+
+            tooltip.style.left = (e.clientX+15)+"px";
+            tooltip.style.top = (e.clientY+15)+"px";
+
+            tooltip.style.display="block";
+
+        }
+
+        dia.onmouseleave=function(){
+
+            tooltip.style.display="none";
+
+        }
+
+    });
+
+}
+
+ativarTooltips();
+
+// ------------------------------
+// Barra de progresso da viagem
+// ------------------------------
+
+function calcularProgresso(inicio,fim){
+
+    let hoje=new Date();
+
+    inicio=new Date(inicio);
+
+    fim=new Date(fim);
+
+    if(hoje<inicio)
+        return 0;
+
+    if(hoje>fim)
+        return 100;
+
+    let total=fim-inicio;
+
+    let passou=hoje-inicio;
+
+    return Math.round((passou/total)*100);
+
+}
+
+// ------------------------------
+// Atualiza painel
+// ------------------------------
+
+const atualizarPainelOriginal = atualizarPainel;
+
+atualizarPainel=function(){
+
+    atualizarPainelOriginal();
+
+    viagens.forEach((viagem,index)=>{
+
+        let card=document.querySelectorAll(".viagem")[index];
+
+        if(!card) return;
+
+        let progresso=calcularProgresso(
+            viagem.inicio,
+            viagem.fim
+        );
+
+        let barra=document.createElement("div");
+
+        barra.style.marginTop="15px";
+
+        barra.innerHTML=`
+
+        <div style="background:#eee;border-radius:20px;height:15px;overflow:hidden;">
+
+        <div style="
+        width:${progresso}%;
+        height:100%;
+        background:linear-gradient(90deg,#ff80bf,#b97cff);
+        transition:.5s;
+        ">
+
+        </div>
+
+        </div>
+
+        <p style="margin-top:6px;font-size:14px;text-align:center;">
+        ${progresso}% da viagem
+        </p>
+
+        `;
+
+        card.appendChild(barra);
+
+    });
+
+}
+
+// ------------------------------
+// Exportar viagens
+// ------------------------------
+
+function exportarViagens(){
+
+    let dados=JSON.stringify(viagens,null,4);
+
+    let blob=new Blob([dados],{
+
+        type:"application/json"
+
+    });
+
+    let url=URL.createObjectURL(blob);
+
+    let a=document.createElement("a");
+
+    a.href=url;
+
+    a.download="viagens.json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+// ------------------------------
+// Importar viagens
+// ------------------------------
+
+function importarViagens(event){
+
+    const arquivo=event.target.files[0];
+
+    if(!arquivo)
+        return;
+
+    const leitor=new FileReader();
+
+    leitor.onload=function(e){
+
+        viagens=JSON.parse(e.target.result);
+
+        salvarViagens();
+
+        atualizarPainel();
+
+        desenharCalendario();
+
+    }
+
+    leitor.readAsText(arquivo);
+
+}
+
+// ------------------------------
+// Botões Exportar / Importar
+// ------------------------------
+
+window.addEventListener("load",()=>{
+
+    const aside=document.querySelector("aside");
+
+    const botoes=document.createElement("div");
+
+    botoes.style.marginTop="25px";
+
+    botoes.innerHTML=`
+
+    <button id="exportar">
+
+    💾 Exportar
+
+    </button>
+
+    <br><br>
+
+    <input type="file" id="arquivoJson">
+
+    `;
+
+    aside.appendChild(botoes);
+
+    document
+    .getElementById("exportar")
+    .onclick=exportarViagens;
+
+    document
+    .getElementById("arquivoJson")
+    .onchange=importarViagens;
+
+});
+
+// ------------------------------
+// Atualiza Tooltips sempre que o
+// calendário for redesenhado
+// ------------------------------
+
+const desenharOriginal=desenharCalendario;
+
+desenharCalendario=function(){
+
+    desenharOriginal();
+
+    ativarTooltips();
+
+}
+
+// =====================================
+// PARTE 5 - Recursos Finais
+// =====================================
+
+// ---------- ESTATÍSTICAS ----------
+
+function atualizarEstatisticas(){
+
+    let totalViagens = viagens.length;
+    let totalDias = 0;
+
+    let proxima = null;
+
+    const hoje = new Date();
+
+    viagens.forEach(v=>{
+
+        let inicio = new Date(v.inicio);
+        let fim = new Date(v.fim);
+
+        totalDias += Math.floor(
+            (fim-inicio)/(1000*60*60*24)
+        )+1;
+
+        if(inicio>=hoje){
+
+            if(proxima==null || inicio < new Date(proxima.inicio))
+                proxima=v;
+
+        }
+
+    });
+
+    let painel=document.getElementById("estatisticas");
+
+    if(!painel){
+
+        painel=document.createElement("div");
+
+        painel.id="estatisticas";
+
+        painel.className="viagem";
+
+        document.querySelector("aside").appendChild(painel);
+
+    }
+
+    painel.innerHTML=`
+
+    <h3>📊 Estatísticas</h3>
+
+    <p><b>Viagens:</b> ${totalViagens}</p>
+
+    <p><b>Dias viajando:</b> ${totalDias}</p>
+
+    <p><b>Próximo destino:</b>
+
+    ${proxima ? proxima.nome : "Nenhum"}
+
+    </p>
+
+    `;
+
+}
+
+// ---------- NOTIFICAÇÕES ----------
+
+function verificarNotificacoes(){
+
+    const hoje = new Date();
+
+    viagens.forEach(v=>{
+
+        let inicio = new Date(v.inicio);
+
+        let dias = Math.ceil(
+            (inicio-hoje)/(1000*60*60*24)
+        );
+
+        const chave="alerta"+v.nome+dias;
+
+        if(localStorage.getItem(chave))
+            return;
+
+        if([30,15,7,3,1].includes(dias)){
+
+            alert(
+
+            "✈️ "+v.nome+
+
+            "\n\nFaltam "+dias+" dias!"
+
+            );
+
+            localStorage.setItem(chave,true);
+
+        }
+
+    });
+
+}
+
+// ---------- FILTRO ----------
+
+function criarFiltroAno(){
+
+    if(document.getElementById("filtroAno"))
+        return;
+
+    const select=document.createElement("select");
+
+    select.id="filtroAno";
+
+    select.style.marginBottom="20px";
+
+    let anos=[];
+
+    viagens.forEach(v=>{
+
+        anos.push(
+
+            new Date(v.inicio).getFullYear()
+
+        );
+
+    });
+
+    anos=[...new Set(anos)];
+
+    select.innerHTML="<option value='todos'>Todos os anos</option>";
+
+    anos.sort().forEach(a=>{
+
+        select.innerHTML+=`
+
+        <option value="${a}">
+
+        ${a}
+
+        </option>
+
+        `;
+
+    });
+
+    document.querySelector("aside").prepend(select);
+
+    select.onchange=function(){
+
+        let valor=this.value;
+
+        document.querySelectorAll(".viagem").forEach((card,i)=>{
+
+            if(valor=="todos"){
+
+                card.style.display="block";
+
+                return;
+
+            }
+
+            let ano=new Date(
+                viagens[i].inicio
+            ).getFullYear();
+
+            card.style.display=
+            ano==valor ? "block":"none";
+
+        });
+
+    }
+
+}
+
+// ---------- BRILHO NAS DATAS ----------
+
+function animarCalendario(){
+
+    document.querySelectorAll(".periodo").forEach(d=>{
+
+        d.animate([
+
+            {
+                transform:"scale(1)"
+            },
+
+            {
+                transform:"scale(1.08)"
+            },
+
+            {
+                transform:"scale(1)"
+            }
+
+        ],{
+
+            duration:2000,
+
+            iterations:Infinity
+
+        });
+
+    });
+
+}
+
+// ---------- AVIÃO ----------
+
+function colocarAviao(){
+
+    document.querySelectorAll(".inicio").forEach(d=>{
+
+        if(d.querySelector(".aviao"))
+            return;
+
+        let span=document.createElement("span");
+
+        span.className="aviao";
+
+        span.innerHTML="✈️";
+
+        span.style.position="absolute";
+
+        span.style.top="5px";
+
+        span.style.right="5px";
+
+        span.style.fontSize="14px";
+
+        d.style.position="relative";
+
+        d.appendChild(span);
+
+    });
+
+}
+
+// ---------- INICIALIZAÇÃO ----------
+
+const atualizarPainelAnterior=atualizarPainel;
+
+atualizarPainel=function(){
+
+    atualizarPainelAnterior();
+
+    atualizarEstatisticas();
+
+    criarFiltroAno();
+
+    verificarNotificacoes();
+
+    animarCalendario();
+
+    colocarAviao();
+
+}
+
+const desenharAnterior=desenharCalendario;
+
+desenharCalendario=function(){
+
+    desenharAnterior();
+
+    animarCalendario();
+
+    colocarAviao();
+
+}
+
+atualizarPainel();
+</script>
+</html>

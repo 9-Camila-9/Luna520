@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna 520</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div id="bloqueio" style="display:none;"></div>
+<div id="contadorLiberacao"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const dataLiberacao = new Date("2026-06-07T00:00:00");
+    const agora = new Date();
+
+    const bloqueio = document.getElementById("bloqueio");
+    const jogo = document.getElementById("jogo");
+    const contadorLiberacao = document.getElementById("contadorLiberacao");
+
+    if (agora < dataLiberacao) {
+
+        jogo.style.display = "none";
+
+        bloqueio.style.display = "flex";
+        bloqueio.style.position = "fixed";
+        bloqueio.style.top = "0";
+        bloqueio.style.left = "0";
+        bloqueio.style.width = "100%";
+        bloqueio.style.height = "100%";
+        bloqueio.style.zIndex = "9999";
+        bloqueio.style.justifyContent = "center";
+        bloqueio.style.alignItems = "center";
+        bloqueio.style.flexDirection = "column";
+        bloqueio.style.color = "white";
+        bloqueio.style.textAlign = "center";
+        bloqueio.style.background = "black";
+
+        const diferenca = dataLiberacao - agora;
+
+        const dias = Math.floor(diferenca / 86400000);
+        const horas = Math.floor((diferenca % 86400000) / 3600000);
+        const minutos = Math.floor((diferenca % 3600000) / 60000);
+        const segundos = Math.floor((diferenca % 60000) / 1000);
+
+        bloqueio.innerHTML = `
+            <h1>🌙 O eclipse está para ocorrer ❤️</h1>
+            <h2>${dias}d ${horas}h ${minutos}m ${segundos}s</h2>
+        `;
+
+        contadorLiberacao.innerHTML = "🌙 Ainda não liberado";
+    }
+
+});
+</script>
+
+    <audio id="bgMusic" loop>
+        <source src="Audios/Loona_star.mp3" type="audio/mpeg">
+    </audio>
+
+    <button onclick="toggleMute()">🔊 Mutar</button>
+
+    <label for="volume">Volume:</label>
+    <input
+        type="range"
+        id="volume"
+        min="0"
+        max="1"
+        step="0.1"
+        value="0.5"
+        oninput="changeVolume(this.value)"
+    >
+
+    <h1>My Moon</h1>
+
+  <div id="jogo">
+
+    <h2 id="tituloJogo">Monte o coração ❤️</h2>
+
+    <div id="containerFinal">
+
+        <div id="tabuleiro">
+            <div class="peca" onclick="revelar(this)"></div>
+            <div class="peca" onclick="revelar(this)"></div>
+            <div class="peca" onclick="revelar(this)"></div>
+            <div class="peca" onclick="revelar(this)"></div>
+        </div>
+
+      <div id="caixaTexto"></div>
+
+<div id="botoesResposta" style="display:none;">
+    <button id="btnSim" onclick="aceitou()">💖 Sim</button>
+    <button id="btnNao">💔 Não</button>
+</div>
+
+<div id="contadorAmor"></div>
+    </div>
+	
+<button id="btnviagem" onclick="abrirPagina()">
+    💌 Ver encontros
+</button>
+
+</div>
+
+
+    <script>
+        const music = document.getElementById("bgMusic");
+
+        // Inicia a música no primeiro clique da página
+        document.addEventListener("click", () => {
+            music.play();
+        }, { once: true });
+
+        function toggleMute() {
+            music.muted = !music.muted;
+
+            const btn = document.querySelector("button");
+            btn.textContent = music.muted
+                ? "🔇 Desmutar"
+                : "🔊 Mutar";
+        }
+
+        function changeVolume(value) {
+            music.volume = value;
+        }
+
+        // Volume inicial (50%)
+        music.volume = 0.5;
+    </script>
+<script>
+let contador = 0;
+
+function revelar(peca){
+
+    if(peca.classList.contains("revelada")){
+        return;
+    }
+
+    peca.classList.add("revelada");
+    contador++;
+
+    if(contador === 4){
+
+        const tabuleiro = document.getElementById("tabuleiro");
+        const titulo = document.getElementById("tituloJogo");
+
+        tabuleiro.style.opacity = "0";
+        titulo.style.opacity = "0";
+
+        setTimeout(() => {
+
+            tabuleiro.style.display = "none";
+            titulo.style.display = "none";
+
+            document.getElementById("caixaTexto").style.display = "block";
+
+            escreverTexto(
+`O eclipse finalmente ocorre e agora finalmente posso ver como sua luz me permea.<br><br>
+Me diga Luna, você aceitaria continuar fazendo um eclipse comigo?<br><br>
+Você aceita ser minha namorada? ❤️`
+            );
+
+        },1000);
+    }
+}
+
+function escreverTexto(texto){
+
+    const caixa = document.getElementById("caixaTexto");
+
+    caixa.innerHTML = "";
+
+    let i = 0;
+
+    const intervalo = setInterval(() => {
+
+        caixa.innerHTML = texto.slice(0, i);
+
+        i++;
+
+        if(i > texto.length){
+
+            clearInterval(intervalo);
+
+            document.getElementById("botoesResposta")
+                .style.display = "block";
+        }
+
+    },50);
+}
+
+const btnNao = document.getElementById("btnNao");
+
+btnNao.addEventListener("mouseover", () => {
+
+    const largura = window.innerWidth - 200;
+    const altura = window.innerHeight - 100;
+
+    const x = Math.random() * largura;
+    const y = Math.random() * altura;
+
+    btnNao.style.position = "fixed";
+    btnNao.style.left = x + "px";
+    btnNao.style.top = y + "px";
+});
+
+function aceitou(){
+
+    localStorage.setItem("aceitouPedido", "sim");
+
+    document.getElementById("botoesResposta").style.display = "none";
+
+    document.getElementById("caixaTexto").innerHTML =
+        "❤️ Finally, I'm yours❤️";
+
+    iniciarContador();
+}
+
+function iniciarContador(){
+
+    const dataInicio = new Date("2026-06-07T00:00:00");
+
+    function atualizar(){
+
+        const agora = new Date();
+
+        const diferenca = agora - dataInicio;
+
+        const dias = Math.floor(diferenca / 86400000);
+        const horas = Math.floor((diferenca % 86400000) / 3600000);
+        const minutos = Math.floor((diferenca % 3600000) / 60000);
+        const segundos = Math.floor((diferenca % 60000) / 1000);
+
+        document.getElementById("contadorAmor").innerHTML =
+            `❤️ Juntos há ${dias} dias, ${horas}h ${minutos}min ${segundos}s ❤️`;
+    }
+
+    atualizar();
+    setInterval(atualizar, 1000);
+}
+
+window.onload = function(){
+
+    if(localStorage.getItem("aceitouPedido")){
+
+        document.getElementById("tituloJogo").style.display = "none";
+        document.getElementById("tabuleiro").style.display = "none";
+
+        document.getElementById("caixaTexto").style.display = "block";
+
+        document.getElementById("caixaTexto").innerHTML =
+            "❤️ I'm yours❤️";
+
+        iniciarContador();
+    }
+};
+
+function abrirPagina() {
+    window.location.href = "viagem.html";
+}
+</script>
+
+
+
+</body>
+	
+  
+
+</html>

@@ -1,0 +1,138 @@
+body {
+    background-image: url("Imagens/fundo.png");
+	background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    margin: 0;
+}
+h1 {
+    color: white;
+    text-align: center;
+    font-size: 4rem;
+    text-shadow: 0 0 10px white;
+}
+#jogo {
+    text-align: center;
+    color: white;
+    margin-top: 50px;
+}
+
+#tabuleiro{
+    width:400px;
+    height:400px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    grid-template-rows:repeat(2,1fr);
+}
+
+.peca{
+    border:1px solid white;
+    background:black;
+    cursor:pointer;
+}
+
+.revelada:nth-child(1){
+    background-image:url("Imagens/coracao.jpeg");
+    background-size:400px 400px;
+    background-position:0 0;
+}
+
+.revelada:nth-child(2){
+    background-image:url("Imagens/coracao.jpeg");
+    background-size:400px 400px;
+    background-position:-200px 0;
+}
+
+.revelada:nth-child(3){
+    background-image:url("Imagens/coracao.jpeg");
+    background-size:400px 400px;
+    background-position:0 -200px;
+}
+
+.revelada:nth-child(4){
+    background-image:url("Imagens/coracao.jpeg");
+    background-size:400px 400px;
+    background-position:-200px -200px;
+}
+
+#caixaTexto{
+    display:none;
+
+    width:500px;
+    max-width:80%;
+
+    margin:auto;
+
+    text-align:center;
+
+    padding:25px;
+    border-radius:20px;
+
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+
+    color:white;
+    font-size:24px;
+    line-height:1.6;
+
+    box-shadow:0 0 20px rgba(255,255,255,0.3);
+	white-space: pre-line;
+}
+
+#tabuleiro{
+    width:400px;
+    height:400px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    transition:opacity 1s ease;
+}
+#tituloJogo{
+    transition: opacity 1s ease;
+}
+
+#botoesResposta{
+    display:none;
+    margin-top:20px;
+    text-align:center;
+}
+
+#btnSim,
+#btnNao{
+   padding:20px 40px;  
+    font-size:28px;     
+    border:none;
+    border-radius:15px;
+    cursor:pointer;
+    margin:10px;
+}
+
+#btnNao{
+    position:relative;
+}
+#contadorAmor{
+    margin-top:30px;
+    color:white;
+    font-size:32px;
+    text-align:center;
+    text-shadow:0 0 10px white;
+}
+
+#btnviagem{
+    display: block;          /* permite centralizar */
+    margin: 30px auto;       /* centraliza horizontalmente */
+    padding: 15px 40px;      /* aumenta o tamanho */
+    font-size: 24px;         /* aumenta a letra */
+    border: none;
+    border-radius: 12px;
+    background-color: #ff6fae;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#btnviagem:hover{
+    background-color: #ff4f98;
+    transform: scale(1.05);
+}
